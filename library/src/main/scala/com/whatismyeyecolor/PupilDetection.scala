@@ -106,6 +106,10 @@ object PupilDetection {
       log.warn(s"Max attempts ($maxAttempts) for finding ideal pupil radius exhausted")
     }
 
+    if (currentRadius < minRadius) {
+      log.info(s"Using minimum value $minRadius as pupil radius (best detected radius was $currentRadius)")
+    }
+
     math.max(currentRadius, minRadius)
   }
 
