@@ -122,6 +122,8 @@ Pupil radius and iris detection is both naive and (somewhat) novel. Both detecti
 
 Iris detection generates possible choices and decides which radius is best given the fact that if the search space extends too wide, the resulting circle will begin to accumulate white pixels since the sclera of the eye is white in color.
 
+Eye color detection uses the OpenCV k-nearest neighbors (kNN) algorithm.
+
 ## License
 Copyright (c) 2017 Jeffrey Olchovy
 
