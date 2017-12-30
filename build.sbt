@@ -14,6 +14,7 @@ lazy val root = (project in file("."))
 val library = (project in file("library"))
   .settings(
     libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "org.slf4j" % "slf4j-api" % "1.7.25",
       "ch.qos.logback" % "logback-classic" % "1.2.3" % Test,
       "org.scalatest" %% "scalatest" % "3.0.4" % Test

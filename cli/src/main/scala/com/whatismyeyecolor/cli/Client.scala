@@ -163,11 +163,11 @@ object Client {
       val inputMat = MatUtils.fromFile(input)
       val (pupilCenter, pupilRadius, irisRadius) = IrisDetection(inputMat)
       val outputs = for {
-        result <- ColorDetection(inputMat, pupilCenter, pupilRadius, irisRadius, numColors = 64).toSeq
-        color = result.color
+        result <- ColorDetection(inputMat, pupilCenter, pupilRadius, irisRadius, numColors = 128).toSeq
+        color = result.colorRange
         area = result.area if area > 0
         outputMat = result.mat
-        output = new File(outputTarget, outputPrefix + color.name + ".png")
+        output = new File(outputTarget, outputPrefix + color.name.toLowerCase + ".png")
       } yield {
         MatUtils.toFile(outputMat, output)
       }
