@@ -166,7 +166,7 @@ object Client {
       val inputMat = MatUtils.fromFile(input)
       val (pupilCenter, pupilRadius, irisRadius) = IrisDetection(inputMat)
       val outputs = for {
-        result <- ColorDetection(inputMat, pupilCenter, irisRadius, numColors = 32).toSeq
+        result <- ColorDetection(inputMat, pupilCenter, pupilRadius, irisRadius, numColors = 64).toSeq
         color = result.color
         area = result.area if area > 0
         outputMat = result.mat

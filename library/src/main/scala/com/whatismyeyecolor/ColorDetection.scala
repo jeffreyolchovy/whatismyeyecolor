@@ -22,19 +22,24 @@ object ColorDetection {
 
   val Colors = Set(Brown, Blue, Gray, Green, Yellow)
 
-  def apply(input: Mat, center: Point, radius: Int, numColors: Int): Set[Result] = {
+  def apply(input: Mat, pupilCenter: Point, pupilRadius: Int, irisRadius: Int, numColors: Int): Set[Result] = {
+    // reduce the amount of colors used in the image
     val reducedInput = MatUtils.quantizeColors(input, k = numColors)
+
     // enclose the circular roi in a rectangular mat
-    val rectRoi = MatUtils.findRectEnclosingCircle(center, radius, input.width, input.height)
+    val rectRoi = MatUtils.findRectEnclosingCircle(pupilCenter, irisRadius, input.width, input.height)
     val roi = new Mat(reducedInput, rectRoi)
 
     // create a black mask
     val mask = Mat.zeros(roi.size, roi.`type`)
-    Imgproc.circle(mask, new Point(radius, radius), radius, Scalar.all(255), -1)
+    Imgproc.circle(mask, new Point(irisRadius, irisRadius), irisRadius, Scalar.all(255), -1)
 
     // place the circular roi on the black mask
     val circularInput = mask.clone()
     Core.bitwise_and(roi, mask, circularInput)
+
+    // draw a black circle on top of the pupil to avoid false positives due to glare, etc.
+    Imgproc.circle(circularInput, new Point(rectRoi.width / 2, rectRoi.height / 2), pupilRadius, Scalar.all(0), -1)
 
     for {
       color <- Colors
