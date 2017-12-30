@@ -3,7 +3,7 @@ A computer vision project that determines eye color from images of human faces.
 
 [OpenCV](https://opencv.org) is leveraged for most of the heavy lifting.
 
-![Screenshot of CLI output when run against the 'Lena' image](screenshots/wimec-lena-output.png)
+![Screenshot of CLI output when run against the 'Lenna' image](screenshots/wimec-lena-output.png)
 
 ## Project structure
 
@@ -25,7 +25,14 @@ A high-level Scala library that exposes the following capabilities:
 ### `cli`
 A command line interface for executing the capabilities present in the library.
 
-Please refer to the following usage doc for the currently available options:
+An example invocation, using the sbt interactive shell, is demonstrated below. It executes the full eye color detection pipeline on an included [Lenna image](https://en.wikipedia.org/wiki/Lenna) and displays the results:
+```
+$ sbt
+> project cli
+> run -W exec -i /images/lena.png -O /tmp
+```
+
+Please refer to the following usage doc for all currently available options:
 ```
 Usage: wimec [GLOBAL_OPTIONS] [SUBCOMMAND] [OPTION]...
 
