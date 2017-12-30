@@ -75,6 +75,6 @@ object IrisDetection {
     def helper(xs: Seq[Int]) = xs.sliding(2).map { ys => ys.max - ys.min }.toList
     val deltas = helper(input)
     val deltas2 = helper(deltas)
-    deltas2.indexOf(deltas2.max) + 1
+    deltas2.lastIndexOf(deltas2.max) + 1
   }
 }
