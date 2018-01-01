@@ -1,13 +1,10 @@
 package com.whatismyeyecolor
 package cli
 
-import java.io.{File, FileNotFoundException}
-import java.net.URL
-import java.nio.file.Paths
+import java.io.File
 import scala.util.{Try, Success, Failure}
 import scala.util.control.NonFatal
 import org.opencv.core.Core
-import org.rogach.scallop._
 import org.slf4j.LoggerFactory
 
 object Client {
@@ -34,8 +31,8 @@ object Client {
 
     try {
       (conf.subcommand match {
-        case Some(command @ conf.exec) =>
-          execute(
+        case Some(command @ conf.all) =>
+          executeAll(
             command.input(),
             command.outputTarget(),
             command.width(),
@@ -83,7 +80,7 @@ object Client {
     }
   }
 
-  def execute(input: File, outputTarget: File, width: Int, faceClassifier: File, eyeClassifier: File): Try[Result] = {
+  def executeAll(input: File, outputTarget: File, width: Int, faceClassifier: File, eyeClassifier: File): Try[Result] = {
     for {
       resizeResult <- resizeImage(input, outputTarget, "resized-" + input.getName, width)
       resizeOutput = resizeResult.resources.head
@@ -178,16 +175,6 @@ object Client {
     }
   }
 
-  private def resolveResource(resourceName: String): File = {
-    getClass.getResource(resourceName) match {
-      case null if resourceName.startsWith("/") => new File(resourceName)
-      case url: URL => Paths.get(url.toURI).toFile
-      case _ => throw new FileNotFoundException(resourceName)
-    }
-  }
-
-  implicit val fileConverter = singleArgConverter[File](resolveResource _)
-
   case class Result(resources: File*) {
     import javax.imageio.ImageIO
     import javax.swing.{JFrame, JLabel, ImageIcon}
@@ -200,115 +187,6 @@ object Client {
         frame.setVisible(true)
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
       }
-    }
-  }
-
-  private class Conf(args: Seq[String]) extends ScallopConf(args) {
-
-    import Conf._
-
-    banner(
-      """
-      |Usage: wimec [GLOBAL_OPTIONS] [SUBCOMMAND] [OPTION]...
-      |
-      |What is my eye color?
-      |
-      |Global Options:
-      """.stripMargin.trim
-    )
-
-    // flags
-    val debug = opt[Boolean](short = 'd', default = Some(false))
-    val verbose = opt[Boolean](short = 'v', default = Some(false))
-    val window = opt[Boolean](short = 'W', default = Some(false))
-
-    // subcommands
-    val exec = new ImageProcSubcommand("exec") {
-      descr("Perform facial, eye, pupil, iris, and eye color detection on a given image")
-      val width = opt[Int]("width", default = Some(600))
-      val faceClassifierType = choice(Seq("haar", "lbp"), short = 'F', default = Some("lbp"))
-      val faceClassifier = faceClassifierType.map {
-        case "lbp" => resolveResource("/lbpcascades/lbpcascade_frontalface_improved.xml")
-        case "haar" => resolveResource("/haarcascades/haarcascade_frontalface_default.xml")
-        case name => throw new IllegalArgumentException("Illegal face classifier type: " + name)
-      }
-      val eyeClassifierType = choice(Seq("haar"), short = 'E', default = Some("haar"))
-      val eyeClassifier = eyeClassifierType.map {
-        case "haar" => resolveResource("/haarcascades/haarcascade_eye.xml")
-        case name => throw new IllegalArgumentException("Illegal eye classifier type: " + name)
-      }
-      validateFileExists(faceClassifier)
-      validateFileExists(eyeClassifier)
-    }
-
-    val resize = new ImageProcSubcommand("resize") {
-      descr("Resize an image to the given width")
-      val width = opt[Int]("width", default = Some(600))
-      val outputBasename = opt[String](noshort = true)
-    }
-
-    val recolor = new ImageProcSubcommand("recolor") {
-      descr("Reduce the number of colors used in an image to k")
-      val numColors = opt[Int](short = 'k', default = Some(16))
-      val outputBasename = opt[String](noshort = true)
-    }
-
-    val face = new ImageProcSubcommand("face") {
-      descr("Perform facial detection on a given image")
-      val classifierType = choice(Seq("haar", "lbp"), short = 'C', default = Some("lbp"))
-      val classifier = classifierType.map {
-        case "lbp" => resolveResource("/lbpcascades/lbpcascade_frontalface_improved.xml")
-        case "haar" => resolveResource("/haarcascades/haarcascade_frontalface_default.xml")
-        case name => throw new IllegalArgumentException("Illegal classifier type: " + name)
-      }
-      validateFileExists(classifier)
-    }
-
-    val eyes = new ImageProcSubcommand("eyes") {
-      descr("Perform eye detection on a given image of a face")
-      val classifierType = choice(Seq("haar"), short = 'C', default = Some("haar"))
-      val classifier = classifierType.map {
-        case "haar" => resolveResource("/haarcascades/haarcascade_eye.xml")
-        case name => throw new IllegalArgumentException("Illegal classifier type: " + name)
-      }
-      validateFileExists(classifier)
-    }
-
-    val pupil = new ImageProcSubcommand("pupil") {
-      descr("Perform pupil detection on a given image of an eye")
-    }
-
-    val iris = new ImageProcSubcommand("iris") {
-      descr("Perform iris detection on a given image of an eye")
-    }
-
-    val colors = new ImageProcSubcommand("colors") {
-      descr("Perform eye color detection on a given image of an eye")
-    }
-
-    addSubcommand(exec)
-    addSubcommand(resize)
-    addSubcommand(recolor)
-    addSubcommand(face)
-    addSubcommand(eyes)
-    addSubcommand(pupil)
-    addSubcommand(iris)
-    addSubcommand(colors)
-
-    errorMessageHandler = { msg: String =>
-      printHelp()
-      throw new IllegalArgumentException(msg)
-    }
-
-    verify()
-  }
-
-  object Conf {
-    class ImageProcSubcommand(name: String) extends Subcommand(name) {
-      val input = opt[File]("input", required = true)
-      val outputTarget = opt[File]("outputTarget", short = 'O', default = Some(new File(".").getCanonicalFile))
-      validateFileExists(input)
-      validateFileIsDirectory(outputTarget)
     }
   }
 }

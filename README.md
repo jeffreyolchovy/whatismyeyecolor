@@ -29,7 +29,7 @@ An example invocation, using the sbt interactive shell, is demonstrated below. I
 ```
 $ sbt
 > project cli
-> run -W exec -i /images/lena.png -O /tmp
+> run -W all -i /images/lena.png -O /tmp
 ```
 
 Please refer to the following usage doc for all currently available options:
@@ -39,52 +39,70 @@ Usage: wimec [GLOBAL_OPTIONS] [SUBCOMMAND] [OPTION]...
 What is my eye color?
 
 Global Options:
-  -d, --debug
-  -v, --verbose
-  -W, --window
+  -W, --window    Display graphical results in discrete windows
       --help      Show help message
 
-Subcommand: exec - Perform facial, eye, pupil, iris, and eye color detection on a given image
-  -E, --eye-classifier-type  <arg>    Choices: haar
-  -F, --face-classifier-type  <arg>   Choices: haar, lbp
-  -i, --input  <arg>
-  -O, --outputTarget  <arg>
+Subcommand: all - Perform face, eye, pupil, iris, and eye color detection on a given image
+  -E, --eye-classifier-type  <arg>    The type of classifier to use for eye
+                                      detection Choices: haar
+  -F, --face-classifier-type  <arg>   The type of classifier to use for face
+                                      detection Choices: haar, lbp
+  -i, --input  <arg>                  The local file or classpath resource that
+                                      will be processed
+  -O, --output-target  <arg>          The directory where resulting resources
+                                      will be written
   -w, --width  <arg>
       --help                          Show help message
 Subcommand: resize - Resize an image to the given width
-  -i, --input  <arg>
-      --output-basename  <arg>
-  -O, --outputTarget  <arg>
+  -i, --input  <arg>             The local file or classpath resource that will
+                                 be processed
+      --output-basename  <arg>   The basename of the resulting output file
+  -O, --output-target  <arg>     The directory where resulting resources will be
+                                 written
   -w, --width  <arg>
       --help                     Show help message
 Subcommand: recolor - Reduce the number of colors used in an image to k
-  -i, --input  <arg>
+  -i, --input  <arg>             The local file or classpath resource that will
+                                 be processed
   -k, --num-colors  <arg>
-      --output-basename  <arg>
-  -O, --outputTarget  <arg>
+      --output-basename  <arg>   The basename of the resulting output file
+  -O, --output-target  <arg>     The directory where resulting resources will be
+                                 written
       --help                     Show help message
-Subcommand: face - Perform facial detection on a given image
-  -C, --classifier-type  <arg>   Choices: haar, lbp
-  -i, --input  <arg>
-  -O, --outputTarget  <arg>
+Subcommand: face - Perform face detection on a given image
+  -C, --classifier-type  <arg>   The type of classifier to use for face
+                                 detection Choices: haar, lbp
+  -i, --input  <arg>             The local file or classpath resource that will
+                                 be processed
+  -O, --output-target  <arg>     The directory where resulting resources will be
+                                 written
       --help                     Show help message
 Subcommand: eyes - Perform eye detection on a given image of a face
-  -C, --classifier-type  <arg>   Choices: haar
-  -i, --input  <arg>
-  -O, --outputTarget  <arg>
+  -C, --classifier-type  <arg>   The type of classifier to use for eye detection
+                                 Choices: haar
+  -i, --input  <arg>             The local file or classpath resource that will
+                                 be processed
+  -O, --output-target  <arg>     The directory where resulting resources will be
+                                 written
       --help                     Show help message
 Subcommand: pupil - Perform pupil detection on a given image of an eye
-  -i, --input  <arg>
-  -O, --outputTarget  <arg>
-      --help                  Show help message
+  -i, --input  <arg>           The local file or classpath resource that will be
+                               processed
+  -O, --output-target  <arg>   The directory where resulting resources will be
+                               written
+      --help                   Show help message
 Subcommand: iris - Perform iris detection on a given image of an eye
-  -i, --input  <arg>
-  -O, --outputTarget  <arg>
-      --help                  Show help message
+  -i, --input  <arg>           The local file or classpath resource that will be
+                               processed
+  -O, --output-target  <arg>   The directory where resulting resources will be
+                               written
+      --help                   Show help message
 Subcommand: colors - Perform eye color detection on a given image of an eye
-  -i, --input  <arg>
-  -O, --outputTarget  <arg>
-      --help                  Show help message
+  -i, --input  <arg>           The local file or classpath resource that will be
+                               processed
+  -O, --output-target  <arg>   The directory where resulting resources will be
+                               written
+      --help                   Show help message
 ```
 
 ### gui
