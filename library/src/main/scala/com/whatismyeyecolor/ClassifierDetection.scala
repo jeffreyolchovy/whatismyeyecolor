@@ -19,7 +19,7 @@ object ClassifierDetection {
     val detections = buffer.toArray.toSeq
     log.debug(s"Detected ${detections.size} object(s)")
     for {
-      rect <- detections.sortBy(-_.size.area).take(2)
+      rect <- detections
     } yield {
       input.submat(rect.y, rect.y + rect.height, rect.x, rect.x + rect.width)
     }

@@ -51,10 +51,10 @@ object Client {
           recolorImage(input, command.outputTarget(), outputBasename, command.numColors())
 
         case Some(command @ conf.face) =>
-          detectWithClassifier(command.input(), command.outputTarget(), "detected-face-", command.classifier())
+          detectWithClassifier(command.input(), command.outputTarget(), "detected-face-", command.classifier(), 1)
 
         case Some(command @ conf.eyes) =>
-          detectWithClassifier(command.input(), command.outputTarget(), "detected-eye-", command.classifier())
+          detectWithClassifier(command.input(), command.outputTarget(), "detected-eye-", command.classifier(), 2)
 
         case Some(command @ conf.pupil) =>
           detectPupil(command.input(), new File(command.outputTarget(), "detected-pupil.png"))
@@ -84,9 +84,9 @@ object Client {
     for {
       resizeResult <- resizeImage(input, outputTarget, "resized-" + input.getName, width)
       resizeOutput = resizeResult.resources.head
-      detectFaceResult <- detectWithClassifier(resizeOutput, outputTarget, "detected-face-", faceClassifier)
+      detectFaceResult <- detectWithClassifier(resizeOutput, outputTarget, "detected-face-", faceClassifier, 1)
       detectFaceOutput = detectFaceResult.resources.head
-      detectEyeResult <- detectWithClassifier(detectFaceOutput, outputTarget, "detected-eye-", eyeClassifier)
+      detectEyeResult <- detectWithClassifier(detectFaceOutput, outputTarget, "detected-eye-", eyeClassifier, 2)
       detectEyeOutput = detectEyeResult.resources
     } yield {
       val detectIrisOutputs = for {
@@ -126,12 +126,12 @@ object Client {
     }
   }
 
-  def detectWithClassifier(input: File, outputTarget: File, outputPrefix: String, classifier: File): Try[Result] = {
+  def detectWithClassifier(input: File, outputTarget: File, outputPrefix: String, classifier: File, numDetections: Int): Try[Result] = {
     Try {
       val inputMat = MatUtils.fromFile(input)
       val outputMats = ClassifierDetection(inputMat, classifier)
       val outputs = for {
-        (outputMat, i) <- outputMats.zipWithIndex
+        (outputMat, i) <- outputMats.sortBy(-_.size.area).take(numDetections).zipWithIndex
         output = new File(outputTarget, outputPrefix + i + ".png")
       } yield {
         MatUtils.toFile(outputMat, output)
