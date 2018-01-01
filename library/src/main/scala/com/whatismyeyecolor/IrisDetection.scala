@@ -24,7 +24,10 @@ object IrisDetection {
 
   def getIrisRadius(input: Mat, pupilCenter: Point, pupilRadius: Int): Int = {
     val minRadius = math.max(pupilRadius, 7)
-    val maxRadius = math.ceil(pupilRadius * 3.5).toInt
+    val maxRadius = {
+      val tmp = math.ceil(pupilRadius * 3.5).toInt
+      if (tmp <= minRadius) minRadius + 2 else tmp
+    }
     val maxAttempts = math.min(10, maxRadius - minRadius)
     val threshold = 128
     val blurRadius = 2
