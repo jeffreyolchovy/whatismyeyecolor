@@ -23,7 +23,16 @@ object PupilDetection {
   }
 
   def getPupilCenter(input: Mat): Point = {
-    val grayscaleInput = MatUtils.grayscale(input)
+    // restrict the pupil search space to a circular region in the center of the image
+    val inputCenter = new Point(input.width / 2, input.height / 2)
+    val inputSearchRadius = input.width / 2
+    val mask = new Mat(input.size, input.`type`, Scalar.all(255))
+    Imgproc.circle(mask, new Point(inputSearchRadius, inputSearchRadius), inputSearchRadius, Scalar.all(0), -1)
+    val circularInput = mask.clone()
+    Core.bitwise_or(input, mask, circularInput)
+
+    // convert to grayscale and compute gradients
+    val grayscaleInput = MatUtils.grayscale(circularInput)
     val gradientX = MatUtils.horizontalGradient(grayscaleInput)
     val gradientY = MatUtils.verticalGradient(grayscaleInput)
     val distanceMat = MatUtils.distance(gradientX, gradientY)
