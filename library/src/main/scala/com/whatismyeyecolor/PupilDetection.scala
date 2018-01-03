@@ -10,7 +10,9 @@ object PupilDetection {
   val log = LoggerFactory.getLogger(getClass)
 
   def apply(input: Mat): (Point, Int) = {
-    val center = getPupilCenter(input)
+    val searchCenter = new Point(input.width / 2, input.height / 2)
+    val searchRadius = input.width / 3
+    val center = getPupilCenter(input, searchCenter, searchRadius)
     val radius = getPupilRadius(input, center)
     (center, radius)
   }
@@ -22,17 +24,15 @@ object PupilDetection {
     output
   }
 
-  def getPupilCenter(input: Mat): Point = {
-    // restrict the pupil search space to a circular region in the center of the image
-    val inputCenter = new Point(input.width / 2, input.height / 2)
-    val inputSearchRadius = input.width / 2
-    val mask = new Mat(input.size, input.`type`, Scalar.all(255))
-    Imgproc.circle(mask, new Point(inputSearchRadius, inputSearchRadius), inputSearchRadius, Scalar.all(0), -1)
-    val circularInput = mask.clone()
-    Core.bitwise_or(input, mask, circularInput)
+  def getPupilCenter(input: Mat, searchCenter: Point, searchRadius: Int): Point = {
+    // convert to grayscale and restrict pupil search space to
+    // a circular region defined by searchCenter, searchRadius
+    val grayscaleInput = {
+      val tmp = MatUtils.grayscale(input)
+      MatUtils.fillPointsOutsideOfCircle(tmp, searchCenter, searchRadius, 255D)
+    }
 
-    // convert to grayscale and compute gradients
-    val grayscaleInput = MatUtils.grayscale(circularInput)
+    // compute gradients
     val gradientX = MatUtils.horizontalGradient(grayscaleInput)
     val gradientY = MatUtils.verticalGradient(grayscaleInput)
     val distanceMat = MatUtils.distance(gradientX, gradientY)
@@ -80,11 +80,16 @@ object PupilDetection {
       acc.put(ii, jj, nextValue)
     }
 
-    // scale down all values in the accumulated results
-    val result = acc.clone()
-    acc.convertTo(result, CvType.CV_32F, 1D / (input.rows * input.cols))
+    // restrict result selection to area within search radius
+    // and scale down all values in the accumulated results
+    val result = {
+      val result = acc.clone()
+      val tmp = MatUtils.fillPointsOutsideOfCircle(acc, searchCenter, searchRadius, 0D)
+      tmp.convertTo(result, CvType.CV_32F, 1D / (input.rows * input.cols))
+      result
+    }
 
-    // return the maximum point in the output
+    // return the maximum point in the result selection
     Core.minMaxLoc(result).maxLoc
   }
 
