@@ -35,6 +35,12 @@ object MatUtils {
     rect.y + rect.height < input.rows
   }
 
+  def circleContainsPoint(center: Point, radius: Int, point: Point): Boolean = {
+    math.pow(point.x - center.x, 2) +
+    math.pow(point.y - center.y, 2) <
+    math.pow(radius, 2)
+  }
+
   def resize(input: Mat, cols: Int): Mat = {
     if (input.width <= cols) {
       log.debug(s"Image of width ${input.width} is already less than or equal to the desired size ($cols)")
@@ -132,5 +138,18 @@ object MatUtils {
     val rectW = math.min(radius * 2, maxWidth - rectX)
     val rectH = math.min(radius * 2, maxHeight - rectY)
     new Rect(rectX, rectY, rectW, rectH)
+  }
+
+  def fillPointsOutsideOfCircle(input: Mat, center: Point, radius: Int, data: Double*): Mat = {
+    val output = input.clone()
+    for {
+      i <- 0 until input.rows
+      j <- 0 until input.cols
+      p = new Point(j, i)
+      if !circleContainsPoint(center, radius, p)
+    } {
+      output.put(i, j, data: _*)
+    }
+    output
   }
 }
