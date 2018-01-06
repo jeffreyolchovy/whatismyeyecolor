@@ -29,7 +29,7 @@ object PupilDetection {
     // a circular region defined by searchCenter, searchRadius
     val grayscaleInput = {
       val tmp = MatUtils.grayscale(input)
-      MatUtils.fillPointsOutsideOfCircle(tmp, searchCenter, searchRadius, 255D)
+      MatUtils.fillPointsOutsideOfCircle(tmp, searchCenter, searchRadius, 200D)
     }
 
     // compute gradients
