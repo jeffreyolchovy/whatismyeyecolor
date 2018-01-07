@@ -24,4 +24,17 @@ object ClassifierDetection {
       input.submat(rect.y, rect.y + rect.height, rect.x, rect.x + rect.width)
     }
   }
+
+  def largest(input: Mat, classifierResource: File): Mat = {
+    largestN(input, classifierResource, n = 1).head
+  }
+
+  def largestN(input: Mat, classifierResource: File, n: Int): Seq[Mat] = {
+    val detections = ClassifierDetection(input, classifierResource).sortBy(-_.size.area).take(n)
+    if (detections.size < n) {
+      throw new RuntimeException(s"Unable to detect $n object(s)")
+    } else {
+      detections
+    }
+  }
 }
