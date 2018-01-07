@@ -11,6 +11,7 @@ A computer vision project that determines eye color from images of human faces.
 - [`cli`](#cli)
 - [`gui`](#gui)
 - [`share`](#share)
+- [`training`](#training)
 
 ### `library`
 A high-level Scala library that exposes the following capabilities:
@@ -112,6 +113,11 @@ A web application that performs eye color detection via image capture from a cli
 
 ### share
 Bundled OpenCV libraries.
+
+### `training`
+A command line utility used for training the eye color classifier.
+
+Given a set of face images organized by eye color, it extracts eye images and performs color detection. Results are written to data files that can be used to train the classifer.
 
 ## Credits and notes
 Face and eye detection simply defers to the LBP and Haar classifiers present in OpenCV.

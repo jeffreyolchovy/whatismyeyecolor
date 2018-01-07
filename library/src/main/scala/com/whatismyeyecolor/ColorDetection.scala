@@ -37,14 +37,17 @@ object ColorDetection {
   }
 
   def detectColorPresence(input: Mat, colorRange: ColorRange): Result = {
+    val grayscaleInput = MatUtils.grayscale(input)
+    val nonZeroTotal = Core.countNonZero(grayscaleInput)
     val hsvInput = input.clone()
     Imgproc.cvtColor(input, hsvInput, Imgproc.COLOR_BGR2HSV)
     val mask = Mat.zeros(hsvInput.size, hsvInput.`type`)
     Core.inRange(hsvInput, colorRange.lowerBound, colorRange.upperBound, mask)
     val output = new Mat
     input.copyTo(output, mask)
-    Result(colorRange, Core.countNonZero(mask), output)
+    val nonZeroInRange = Core.countNonZero(mask)
+    Result(colorRange, nonZeroInRange, (nonZeroInRange * 100) / nonZeroTotal, output)
   }
 
-  case class Result(colorRange: ColorRange, area: Int, mat: Mat)
+  case class Result(colorRange: ColorRange, area: Int, percent: Int,  mat: Mat)
 }

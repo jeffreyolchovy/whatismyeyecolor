@@ -9,7 +9,7 @@ inThisBuild(
 )
 
 lazy val root = (project in file("."))
-  .aggregate(library, cli, gui)
+  .aggregate(library, cli, gui, training)
 
 val library = (project in file("library"))
   .settings(
@@ -44,5 +44,16 @@ val gui = (project in file("gui"))
     ),
     unmanagedBase := (unmanagedBase in library).value,
     mainClass in (Compile, run) := Some("com.whatismyeyecolor.gui.Server")
+  )
+  .dependsOn(library)
+
+val training = (project in file("training"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.rogach" %% "scallop" % "3.1.1",
+      "ch.qos.logback" % "logback-classic" % "1.2.3"
+    ),
+    unmanagedBase := (unmanagedBase in library).value,
+    mainClass in (Compile, run) := Some("com.whatismyeyecolor.training.Client")
   )
   .dependsOn(library)
