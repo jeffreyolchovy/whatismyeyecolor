@@ -46,6 +46,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
       case "haar" => resolveResource("/haarcascades/haarcascade_eye.xml")
       case name => throw new IllegalArgumentException("Illegal eye classifier type: " + name)
     }
+    val numColors = opt[Int](short = 'k', default = Some(128))
     validateFileExists(faceClassifier)
     validateFileExists(eyeClassifier)
   }
@@ -58,7 +59,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
 
   val recolor = new ImageProcSubcommand("recolor") {
     descr("Reduce the number of colors used in an image to k")
-    val numColors = opt[Int](short = 'k', default = Some(16))
+    val numColors = opt[Int](short = 'k', default = Some(128))
     val outputBasename = opt[String](noshort = true, descr = "The basename of the resulting output file")
   }
 
@@ -103,6 +104,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
 
   val colors = new ImageProcSubcommand("colors") {
     descr("Perform eye color detection on a given image of an eye")
+    val numColors = opt[Int](short = 'k', default = Some(128))
   }
 
   addSubcommand(all)

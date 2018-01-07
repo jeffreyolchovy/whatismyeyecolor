@@ -37,7 +37,8 @@ object Client {
             command.outputTarget(),
             command.width(),
             command.faceClassifier(),
-            command.eyeClassifier()
+            command.eyeClassifier(),
+            command.numColors()
           )
 
         case Some(command @ conf.resize) =>
@@ -63,7 +64,7 @@ object Client {
           detectIris(command.input(), new File(command.outputTarget(), "detected-iris.png"))
 
         case Some(command @ conf.colors) =>
-          detectColors(command.input(), command.outputTarget(), "detected-colors-")
+          detectColors(command.input(), command.outputTarget(), "detected-colors-", command.numColors())
 
         case Some(_) | None =>
           conf.printHelp()
@@ -80,7 +81,7 @@ object Client {
     }
   }
 
-  def executeAll(input: File, outputTarget: File, width: Int, faceClassifier: File, eyeClassifier: File): Try[Result] = {
+  def executeAll(input: File, outputTarget: File, width: Int, faceClassifier: File, eyeClassifier: File, numColors: Int): Try[Result] = {
     for {
       resizeResult <- resizeImage(input, outputTarget, "resized-" + input.getName, width)
       resizeOutput = resizeResult.resources.head
@@ -89,21 +90,14 @@ object Client {
       detectEyeResult <- detectWithClassifier(detectFaceOutput, outputTarget, "detected-eye-", eyeClassifier, 2)
       detectEyeOutput = detectEyeResult.resources
     } yield {
-      val detectIrisOutputs = for {
-        (irisInput, i) <- detectEyeOutput.zipWithIndex
-        detectIrisResult = detectIris(irisInput, new File(outputTarget, s"detected-iris-$i.png"))
-        detectIrisOutput <- detectIrisResult.map(_.resources).getOrElse(Seq.empty[File])
-      } yield {
-        detectIrisOutput
-      }
       val detectColorsOutputs = for {
         (colorInput, i) <- detectEyeOutput.zipWithIndex
-        detectColorsResult = detectColors(colorInput, outputTarget, s"detected-color-$i-")
+        detectColorsResult = detectColors(colorInput, outputTarget, s"detected-color-$i-", numColors)
         detectColorsOutput <- detectColorsResult.map(_.resources).getOrElse(Seq.empty[File])
       } yield {
         detectColorsOutput
       }
-      val outputs = Seq(resizeOutput, detectFaceOutput) ++ detectEyeOutput ++ detectColorsOutputs ++ detectIrisOutputs
+      val outputs = Seq(resizeOutput, detectFaceOutput) ++ detectEyeOutput ++ detectColorsOutputs
       Result(outputs: _*)
     }
   }
@@ -129,14 +123,18 @@ object Client {
   def detectWithClassifier(input: File, outputTarget: File, outputPrefix: String, classifier: File, numDetections: Int): Try[Result] = {
     Try {
       val inputMat = MatUtils.fromFile(input)
-      val outputMats = ClassifierDetection(inputMat, classifier)
+      val outputMats = ClassifierDetection.largestN(inputMat, classifier, numDetections)
       val outputs = for {
-        (outputMat, i) <- outputMats.sortBy(-_.size.area).take(numDetections).zipWithIndex
+        (outputMat, i) <- outputMats.zipWithIndex
         output = new File(outputTarget, outputPrefix + i + ".png")
       } yield {
         MatUtils.toFile(outputMat, output)
       }
-      Result(outputs: _*)
+      if (outputs.size < numDetections) {
+        throw new RuntimeException(s"Unable to detect $numDetections object(s) using $classifier on $input")
+      } else {
+        Result(outputs: _*)
+      }
     }
   }
 
@@ -158,12 +156,14 @@ object Client {
     }
   }
 
-  def detectColors(input: File, outputTarget: File, outputPrefix: String): Try[Result] = {
+  def detectColors(input: File, outputTarget: File, outputPrefix: String, numColors: Int): Try[Result] = {
     Try {
       val inputMat = MatUtils.fromFile(input)
       val (pupilCenter, pupilRadius, irisRadius) = IrisDetection(inputMat)
+      val irisOutputMat = IrisDetection.mark(inputMat, pupilCenter, pupilRadius, irisRadius)
+      val irisOutput = MatUtils.toFile(irisOutputMat, new File(outputTarget, outputPrefix + "iris.png"))
       val outputs = for {
-        result <- ColorDetection(inputMat, pupilCenter, pupilRadius, irisRadius, numColors = 128).toSeq
+        result <- ColorDetection(inputMat, pupilCenter, pupilRadius, irisRadius, numColors).toSeq
         color = result.colorRange
         area = result.area if area > 0
         outputMat = result.mat
@@ -171,7 +171,7 @@ object Client {
       } yield {
         MatUtils.toFile(outputMat, output)
       }
-      Result(outputs: _*)
+      Result(outputs :+ irisOutput: _*)
     }
   }
 
