@@ -5,6 +5,10 @@ A computer vision project that determines eye color from images of human faces.
 
 ![Screenshot of CLI output when run against the 'Lenna' image](screenshots/wimec-lena-output.png)
 
+## Requirements
+- An installation of OpenCV 3.x.x+ with Java bindings
+- The `OPENCV_JAVA_PATH` environment variable set to the directory which contains the installed OpenCV library
+
 ## Project structure
 
 - [`library`](#library)
@@ -28,7 +32,7 @@ A command line interface for executing the capabilities present in the library.
 
 An example invocation, using the sbt interactive shell, is demonstrated below. It executes the full eye color detection pipeline on an included [Lenna image](https://en.wikipedia.org/wiki/Lenna) and displays the results:
 ```
-$ sbt
+$ OPENCV_JAVA_PATH=/opt/local/share/OpenCV/java sbt
 > project cli
 > run -W all -i /images/lena.png -O /tmp
 ```
@@ -106,13 +110,13 @@ Subcommand: colors - Perform eye color detection on a given image of an eye
       --help                   Show help message
 ```
 
-### gui
+### `gui`
 *Not yet implemented*
 
 A web application that performs eye color detection via image capture from a client's webcam.
 
-### share
-Bundled OpenCV libraries.
+### `share`
+OpenCV Java archive.
 
 ### `training`
 A command line utility used for training the eye color classifier.

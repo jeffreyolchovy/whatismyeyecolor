@@ -3,12 +3,20 @@ inThisBuild(
     organization := "com.whatismyeyecolor",
     scalaVersion := "2.12.4",
     scalacOptions ++= Seq("-deprecation", "-feature", "-language:_"),
-    javaOptions += "-Djava.library.path=" + baseDirectory.value / "share" / "opencv" / "java",
+    javaOptions += "-Djava.library.path=" + sys.env("OPENCV_JAVA_PATH"),
     fork := true
   )
 )
 
 lazy val root = (project in file("."))
+  .settings(
+    onLoad in Global := {
+      sys.env.get("OPENCV_JAVA_PATH") match {
+        case Some(_) => (onLoad in Global).value
+        case None => sys.error("Please set environment variable OPENCV_PATH before continuing")
+      }
+    }
+  )
   .aggregate(library, cli, gui, training)
 
 val library = (project in file("library"))
