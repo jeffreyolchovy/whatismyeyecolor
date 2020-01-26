@@ -6,7 +6,7 @@ A computer vision project that determines eye color from images of human faces.
 ![Screenshot of CLI output when run against the 'Lenna' image](screenshots/wimec-lena-output.png)
 
 ## Requirements
-- An installation of OpenCV 3.x.x+ with Java bindings
+- An installation of OpenCV 3.4.x+ with Java 8 compatibility (e.g. 3.4.1)
 - The `OPENCV_JAVA_PATH` environment variable set to the directory which contains the installed OpenCV library
 
 ## Project structure
