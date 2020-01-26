@@ -3,7 +3,7 @@ inThisBuild(
     organization := "com.whatismyeyecolor",
     scalaVersion := "2.12.4",
     scalacOptions ++= Seq("-deprecation", "-feature", "-language:_"),
-    javaOptions += "-Djava.library.path=" + sys.env("OPENCV_JAVA_PATH"),
+    javaOptions ++= Seq("-Djava.library.path=" + sys.env("OPENCV_JAVA_PATH")),
     fork := true
   )
 )
@@ -13,7 +13,7 @@ lazy val root = (project in file("."))
     onLoad in Global := {
       sys.env.get("OPENCV_JAVA_PATH") match {
         case Some(_) => (onLoad in Global).value
-        case None => sys.error("Please set environment variable OPENCV_PATH before continuing")
+        case None => sys.error("Please set environment variable OPENCV_JAVA_PATH before continuing")
       }
     }
   )
